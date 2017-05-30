@@ -2,6 +2,8 @@
 ## on the provided outcome
 
 library(rapportools)
+library(datasets)
+library(plyr)
 
 testcase <- function(){
     states <- c("AK", "AL", "AR", "AZ", "CA", "CO", "CT", "DC", "DE", "FL", "GA", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA", "MA", "MD", "ME", "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE", "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VA", "VT", "WA", "WI", "WV", "WY")
@@ -12,8 +14,7 @@ testcase <- function(){
 
 best <- function(state, outcome) {
     ## Read outcome data
-    options(stringsAsFactors = FALSE)
-    outcomedat <- read.csv("outcome-of-care-measures.csv", na.strings = "Not Available")
+    outcomedat <- read.csv("outcome-of-care-measures.csv", na.strings = "Not Available", stringsAsFactors = FALSE)
     
     ## Check that state and outcome are valid
     states <- unique(outcomedat$State)
@@ -30,18 +31,16 @@ best <- function(state, outcome) {
     ## Return hospital name in that state with lowest 30-day death
     ## rate
     
-    tablehead <- paste("Number.of.Patients...Hospital.30.Day.Death..Mortality..Rates.from.", outcome, sep = "")
-    outcomedat <- sort_df(outcomedat, vars = "Hospital.Name")
-    print(head(outcomedat))
+    tablehead <- paste("Hospital.30.Day.Death..Mortality..Rates.from", outcome, sep = ".")
+    
+    outcomedat <- sort_df(outcomedat, "Hospital.Name")
     outcomedat <- outcomedat[outcomedat$State == state, ]
-    
+    outcomedat <- outcomedat[complete.cases(outcomedat[[tablehead]]), ]
     outcomedatcol <-outcomedat[[tablehead]]
-    outcomedatcol <- as.numeric(outcomedatcol)
+
+    minimums <- which(outcomedatcol == min(outcomedatcol))
     
-    outcomedatcol <- na.omit(outcomedatcol)
-    maximums <- which(outcomedatcol == max(outcomedatcol))
-    
-    print(outcomedat$Hospital.Name[maximums])
+    print(outcomedat$Hospital.Name[minimums])
     
     
 }
