@@ -1,8 +1,8 @@
 rankall <- function(outcome, num = "best") {
     ## Read outcome data
     outcomedat <- read.csv("outcome-of-care-measures.csv", na.strings = "Not Available", stringsAsFactors = FALSE)
-    tablehead <- paste("Hospital.30.Day.Death..Mortality..Rates.from", outcome, sep = ".")
-    outcomedat <- outcomedat[complete.cases(outcomedat[[tablehead]]), ]
+    
+    
     
     ## Check that outcome is valid
     outcome <- tocamel(outcome, upper = TRUE, sep = ".")
@@ -11,6 +11,8 @@ rankall <- function(outcome, num = "best") {
         stop("invalid outcome")
     }
     
+    tablehead <- paste("Hospital.30.Day.Death..Mortality..Rates.from", outcome, sep = ".")
+    
     ## For each state, find the hospital of the given rank
     
     
@@ -18,6 +20,7 @@ rankall <- function(outcome, num = "best") {
     
     for (i in unique(outcomedat$State)){
         statedata <- outcomedat[outcomedat$State == i, ]
+        statedata <- statedata[complete.cases(statedata[[tablehead]]), ]
         
         if (num == "best"){
             num <- 1
@@ -29,7 +32,7 @@ rankall <- function(outcome, num = "best") {
         arrangedstatedata$Rank <- NA
         arrangedstatedata$Rank <- row_number(arrangedstatedata[[tablehead]])
 
-        hospital <- arrangedstatedata[arrangedstatedata$Rank == num, "Hospital.Name"]
+        hospital <- arrangedstatedata[which(arrangedstatedata$Rank == num), "Hospital.Name"]
         if (length(hospital) == 0){
             hospital <- NA
         }
@@ -40,6 +43,6 @@ rankall <- function(outcome, num = "best") {
     ## Return a data frame with the hospital names and the
     ## (abbreviated) state name
     
-    rankedhospital <- data.frame(hospitals, unique(outcomedat$State))
-    head(rankedhospital)
+    rankedhospital <- data.frame(Hospital = hospitals,state =  unique(outcomedat$State))
+    rankedhospital
 }
